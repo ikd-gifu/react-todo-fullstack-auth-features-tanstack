@@ -1,0 +1,4 @@
+.header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; box-sizing: border-box; background: #4a90e2; color: white; }
+.title { margin: 0; font-size: 24px; font-weight: bold; }
+.logoutButton { padding: 8px 14px; border: 2px solid white; border-radius: 4px; background: transparent; color: white; font-weight: bold; cursor: pointer; }
+.logoutButton:hover { background: #357abd; border-color: #357abd; }

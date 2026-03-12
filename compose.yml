@@ -1,0 +1,58 @@
+services:
+  db:
+    container_name: ${DB_CONTAINER_NAME:-react_todo_fullstack_auth_features_tanstack_db}
+    # Dockerのイメージストア（Docker Desktopの内部VM）に保存されているMySQLのイメージを使用
+    image: mysql:8.0
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      TZ: ${TZ}
+    # ホストのポート3306をコンテナ内のポート3306に公開
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_CONTAINER_PORT}"
+    # MySQLのデータ（/var/lib/mysql）をホストマシンのDockerボリュームに永続化
+    volumes:
+      - react-todo-fullstack-auth-features-tanstack-db-data:/var/lib/mysql
+    # healthy になると depends_on の条件を満たす
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    container_name: ${BACKEND_CONTAINER_NAME:-react_todo_fullstack_auth_features_tanstack_backend}
+    # ./backendにてDockerfileをビルドしてイメージを作成
+    build:
+      context: ./backend
+    # コンテナ起動時に実行するコマンド
+    command: bash -lc "bin/rails s -b 0.0.0.0 -p ${BACKEND_CONTAINER_PORT}"
+    env_file: .env
+    # MySQL に接続するための環境変数を設定
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RAILS_ENV: ${RAILS_ENV}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      TZ: ${TZ}
+    # ホスト上のディレクトリをコンテナでマウントする
+    # ローカル環境の作業ディレクトリをコンテナと共有する
+    # DockerfileのWORKDIRで指定した場所にマウントされる
+    volumes:
+      # ホストの backend をコンテナ内の /rails に見せる
+      - ./backend:/rails
+    ports:
+      # ホストのポート3001をコンテナ内のポート3001に公開
+      - "${BACKEND_PORT}:${BACKEND_CONTAINER_PORT}"
+    # 起動順の依存関係を指定
+    # 依存先のヘルスチェックが「healthy」になってから起動
+    depends_on:
+      db:
+        condition: service_healthy
+
+# 名前付きボリュームの定義
+volumes:
+  react-todo-fullstack-auth-features-tanstack-db-data:
