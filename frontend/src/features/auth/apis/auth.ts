@@ -10,6 +10,7 @@ const resolveError = (error: unknown) => {
   return body?.error ?? body?.errors?.[0] ?? error.message;
 };
 
+// auth.tsは通信責務だけ担当
 export const signup = async (name: string, email: string, password: string, password_confirmation: string) => {
   try {
     const response = await apiClient.post<AuthType>("/auth/signup", {
@@ -22,7 +23,6 @@ export const signup = async (name: string, email: string, password: string, pass
   }
 };
 
-// 通信責務だけ担当
 export const login = async (email: string, password: string) => {
   try {
     const response = await apiClient.post<AuthType>("/auth/login", { email, password });
