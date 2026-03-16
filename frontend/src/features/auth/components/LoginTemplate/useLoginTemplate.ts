@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { login } from "../../apis/auth";
 import { useAuthContext } from "../../hooks/useAuthContext";
+import { useLoginMutation } from "../../hooks/useLoginMutation";
 
 const schema = z.object({
   email: z.string().email("メールアドレスの形式で入力してください"),
@@ -15,6 +15,7 @@ type LoginFormValues = z.infer<typeof schema>;
 
 export const useLoginTemplate = () => {
   const { signIn } = useAuthContext();
+  const loginMutation = useLoginMutation();
 
   const {
     control,
@@ -32,7 +33,7 @@ export const useLoginTemplate = () => {
   const handleLoginSubmit = handleSubmit(
     useCallback(
       async (values: LoginFormValues) => {
-        const res = await login(values.email, values.password);
+        const res = await loginMutation.mutateAsync(values);
 
         if (res.code !== 200 || !res.data) {
           setError("email", {
@@ -44,7 +45,7 @@ export const useLoginTemplate = () => {
 
         signIn(res.data.user, res.data.token);
       },
-      [setError, signIn]
+      [loginMutation, setError, signIn]
     )
   );
 

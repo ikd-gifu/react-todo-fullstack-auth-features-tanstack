@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/* 同じ共有キャッシュを参照するようpropsで渡す */}
+    {/* アプリケーションに接続し同じ共有キャッシュを参照するようpropsで渡す */}
     <QueryClientProvider client={queryClient}>
       <Router />
     </QueryClientProvider>
