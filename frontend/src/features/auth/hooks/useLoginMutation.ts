@@ -7,8 +7,10 @@ export const useLoginMutation = () => {
 
   return useMutation({
     mutationFn: ({ email, password }: {email: string, password: string}) => login(email, password),
+    // { code: response.status, data: response.data }
     onSuccess: (data) => {
       // QueryCache にキー: ['auth']で保存
+      // キーに紐づく data: { code: 200, data: { token, user } }
       queryClient.setQueryData(['auth'], data);
     }
   });

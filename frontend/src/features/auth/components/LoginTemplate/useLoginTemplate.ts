@@ -34,6 +34,7 @@ export const useLoginTemplate = () => {
     useCallback(
       async (values: LoginFormValues) => {
         const res = await loginMutation.mutateAsync(values);
+        // {code: 200, data: {token: , user{}}}
 
         if (res.code !== 200 || !res.data) {
           setError("email", {
@@ -43,7 +44,7 @@ export const useLoginTemplate = () => {
           return;
         }
 
-        signIn(res.data.user, res.data.token);
+        signIn(res.data.user, res.data.token, res.code);
       },
       [loginMutation, setError, signIn]
     )

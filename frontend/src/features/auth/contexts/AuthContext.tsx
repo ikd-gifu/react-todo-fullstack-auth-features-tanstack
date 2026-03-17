@@ -9,7 +9,7 @@ type AuthContextProps = {
 type AuthContextType = {
   user: UserType | null;
   isAuth: boolean;
-  signIn: (user: UserType, token: string) => void;
+  signIn: (user: UserType, token: string, code: number) => void;
   signOut: () => void;
 };
 

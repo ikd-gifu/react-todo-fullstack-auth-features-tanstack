@@ -56,7 +56,7 @@ export const useSignUpTemplate = () => {
           return;
         }
 
-        signIn(res.data.user, res.data.token);
+        signIn(res.data.user, res.data.token, res.code);
       },
       [setError, signIn]
     )

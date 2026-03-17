@@ -4,6 +4,7 @@ import { NAV_ITEMS } from "../../../shared/constants/navigation";
 import { removeAxiosAuthentication, setAxiosAuthentication } from "../../../shared/apis/apiClient";
 import { UserType } from "../../users/types/User";
 import { useCheckAuthenticationQuery } from "./useCheckAuthenticationQuery";
+import { useQueryClient } from '@tanstack/react-query';
 
 // 認証ロジック（API確認、signIn/signOut、遷移）の責務
 export const useAuth = () => {
@@ -11,19 +12,24 @@ export const useAuth = () => {
   const { pathname } = useLocation();
   const [user, setUser] = useState<UserType | null>(null);
   const [isAuth, setIsAuth] = useState(false);
+  const queryClient = useQueryClient();
 
   // checkAuthentication の呼び出しを query に移譲
-  // data はチェック結果
+  // data はチェック結果 { code: response.status, data: response.data }
+  // まずはキャッシュを取得
   const { data: authData, isLoading } = useCheckAuthenticationQuery();
 
   // 認証状態管理責務を担当
   // レスポンスのuserに入れ替える（nextUser）
-  const signIn = useCallback((nextUser: UserType, token: string) => {
-    setUser(nextUser);
-    setIsAuth(true);
+  const signIn = useCallback((nextUser: UserType, token: string, code: number) => {
     setAxiosAuthentication(token);
+    // useState()を使わずに'auth'をキーとしてqueryキャッシュを更新
+    // {code: 200, data: {token: , user{}}}
+    queryClient.setQueryData(['auth'], { code, data: {token, user: nextUser } });
+    // ブラウザのURLを書き換え
     navigate(NAV_ITEMS.TOP);
-  }, [navigate]);
+    console.log('NAVIGATE TO TOP');
+  }, [navigate, queryClient]);
 
   const signOut = useCallback(() => {
     setUser(null);
