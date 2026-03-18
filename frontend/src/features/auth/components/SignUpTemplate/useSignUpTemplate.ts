@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { signup } from "../../apis/auth";
 import { useAuthContext } from "../../hooks/useAuthContext";
+import { useSignUpMutation } from "../../hooks/useSignUpMutation";
 
 const schema = z
   .object({
@@ -22,6 +22,7 @@ type SignUpFormValues = z.infer<typeof schema>;
 
 export const useSignUpTemplate = () => {
   const { signIn } = useAuthContext();
+  const signUpMutation = useSignUpMutation();
 
   const {
     control,
@@ -41,14 +42,9 @@ export const useSignUpTemplate = () => {
   const handleSignUpSubmit = handleSubmit(
     useCallback(
       async (values: SignUpFormValues) => {
-        const res = await signup(
-          values.name,
-          values.email,
-          values.password,
-          values.password_confirmation
-        );
+        const res = await signUpMutation.mutateAsync(values);
 
-        if (res.code !== 201 || !res.data) {
+        if (!res.data) {
           setError("email", {
             type: "manual",
             message: res.message ?? "新規登録に失敗しました",
@@ -56,9 +52,9 @@ export const useSignUpTemplate = () => {
           return;
         }
 
-        signIn(res.data.user, res.data.token, res.code);
+        signIn(res.data.user, res.data.token);
       },
-      [setError, signIn]
+      [setError, signIn, signUpMutation]
     )
   );
 

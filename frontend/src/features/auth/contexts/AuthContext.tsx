@@ -7,7 +7,7 @@ type AuthContextProps = {
 };
 
 type AuthContextType = {
-  signIn: (user: UserType, token: string, code: number) => void;
+  signIn: (user: UserType, token: string) => void;
   signOut: () => void;
 };
 

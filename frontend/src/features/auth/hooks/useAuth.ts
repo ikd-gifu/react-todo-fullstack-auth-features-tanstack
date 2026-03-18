@@ -14,17 +14,16 @@ export const useAuth = () => {
   const hasToken = !!localStorage.getItem("authentication");
 
   // checkAuthentication の呼び出しを query に移譲
-  // data はチェック結果 { code: response.status, data: response.data }
+  // data はチェック結果 { data: { user } }
   // まずはキャッシュを取得
   const { data: authData, isLoading, isSuccess } = useCheckAuthenticationQuery(hasToken);
 
   // 認証状態管理責務を担当
   // レスポンスのuserに入れ替える（nextUser）
-  const signIn = useCallback((nextUser: UserType, token: string, code: number) => {
+  const signIn = useCallback((nextUser: UserType, token: string) => {
     setAxiosAuthentication(token);
     // useState()を使わずに'auth'をキーとしてqueryキャッシュを更新
-    // {code: 200, data: {token: , user{}}}
-    queryClient.setQueryData(['auth'], { code, data: {token, user: nextUser } });
+    queryClient.setQueryData(['auth'], { data: { token, user: nextUser } });
     // ブラウザのURLを書き換え
     navigate(NAV_ITEMS.TOP);
   }, [navigate, queryClient]);
@@ -48,7 +47,7 @@ export const useAuth = () => {
     }
 
     // query 成功時のみ認証済み判定する
-    const authed = isSuccess && authData.code === 200 && !!authData.data?.user;
+    const authed = isSuccess && !!authData?.data?.user;
     // 未認証で保護ページならログインへ遷移
     if (!authed && !isPublic) navigate(NAV_ITEMS.LOGIN);
     // 認証済みで公開ページならTOPへ遷移

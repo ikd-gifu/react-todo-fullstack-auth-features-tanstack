@@ -34,9 +34,8 @@ export const useLoginTemplate = () => {
     useCallback(
       async (values: LoginFormValues) => {
         const res = await loginMutation.mutateAsync(values);
-        // {code: 200, data: {token: , user{}}}
 
-        if (res.code !== 200 || !res.data) {
+        if (!res.data) {
           setError("email", {
             type: "manual",
             message: res.message ?? "ログインに失敗しました",
@@ -44,7 +43,7 @@ export const useLoginTemplate = () => {
           return;
         }
 
-        signIn(res.data.user, res.data.token, res.code);
+        signIn(res.data.user, res.data.token);
       },
       [loginMutation, setError, signIn]
     )

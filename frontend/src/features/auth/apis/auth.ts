@@ -2,7 +2,7 @@ import apiClient, { isAxiosError } from "../../../shared/apis/apiClient";
 import { AuthType } from "../types/auth";
 import { UserType } from "../../users/types/User";
 
-type ApiResponse<T = undefined> = { code: number; data?: T; message?: string };
+type ApiResponse<T = undefined> = { data?: T; message?: string };
 
 const resolveError = (error: unknown) => {
   if (!isAxiosError(error)) return "Unexpected error";
@@ -17,23 +17,23 @@ export const signup = async (name: string, email: string, password: string, pass
       user: { name, email, password, password_confirmation },
     });
     // ApiResponse<T>の型アサーションでtry/catch で成功時と失敗時の戻り値を統一
-    return { code: response.status, data: response.data } as ApiResponse<AuthType>;
+    return { data: response.data } as ApiResponse<AuthType>;
   } catch (error) {
-    return { code: isAxiosError(error) ? (error.response?.status ?? 500) : 500, message: resolveError(error) } as ApiResponse;
+    return { message: resolveError(error) } as ApiResponse;
   }
 };
 
 export const login = async (email: string, password: string) => {
   try {
     const response = await apiClient.post<AuthType>("/auth/login", { email, password });
-    return { code: response.status, data: response.data } as ApiResponse<AuthType>;
+    return { data: response.data } as ApiResponse<AuthType>;
   } catch (error) {
-    return { code: isAxiosError(error) ? (error.response?.status ?? 500) : 500, message: resolveError(error) } as ApiResponse;
+    return { message: resolveError(error) } as ApiResponse;
   }
 };
 
 export const checkAuthentication = async () => {
   const response = await apiClient.get<{ user: UserType }>("/auth/check");
   // レスポンスにtokenを含まない
-  return { code: response.status, data: response.data } as ApiResponse<{ user: UserType }>;
+  return { data: response.data } as ApiResponse<{ user: UserType }>;
 };
