@@ -33,10 +33,7 @@ export const login = async (email: string, password: string) => {
 };
 
 export const checkAuthentication = async () => {
-  try {
-    const response = await apiClient.get<{ user: UserType }>("/auth/check");
-    return { code: response.status, data: response.data } as ApiResponse<{ user: UserType }>;
-  } catch (error) {
-    return { code: isAxiosError(error) ? (error.response?.status ?? 500) : 500, message: resolveError(error) } as ApiResponse;
-  }
+  const response = await apiClient.get<{ user: UserType }>("/auth/check");
+  // レスポンスにtokenを含まない
+  return { code: response.status, data: response.data } as ApiResponse<{ user: UserType }>;
 };

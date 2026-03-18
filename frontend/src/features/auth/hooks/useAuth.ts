@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { NAV_ITEMS } from "../../../shared/constants/navigation";
 import { removeAxiosAuthentication, setAxiosAuthentication } from "../../../shared/apis/apiClient";
@@ -10,14 +10,13 @@ import { useQueryClient } from '@tanstack/react-query';
 export const useAuth = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [user, setUser] = useState<UserType | null>(null);
-  const [isAuth, setIsAuth] = useState(false);
   const queryClient = useQueryClient();
+  const hasToken = !!localStorage.getItem("authentication");
 
   // checkAuthentication の呼び出しを query に移譲
   // data はチェック結果 { code: response.status, data: response.data }
   // まずはキャッシュを取得
-  const { data: authData, isLoading } = useCheckAuthenticationQuery();
+  const { data: authData, isLoading, isSuccess } = useCheckAuthenticationQuery(hasToken);
 
   // 認証状態管理責務を担当
   // レスポンスのuserに入れ替える（nextUser）
@@ -28,15 +27,14 @@ export const useAuth = () => {
     queryClient.setQueryData(['auth'], { code, data: {token, user: nextUser } });
     // ブラウザのURLを書き換え
     navigate(NAV_ITEMS.TOP);
-    console.log('NAVIGATE TO TOP');
   }, [navigate, queryClient]);
 
   const signOut = useCallback(() => {
-    setUser(null);
-    setIsAuth(false);
     removeAxiosAuthentication();
+    // 'auth'キャッシュを完全削除（undefined）
+    queryClient.removeQueries({ queryKey: ['auth'] });
     navigate(NAV_ITEMS.LOGIN);
-  }, [navigate]);
+  }, [navigate, queryClient]);
 
   // AuthProviderで全ページに配布
   // pathname が変わると認証状態を再判定して、必要ならリダイレクト
@@ -44,24 +42,19 @@ export const useAuth = () => {
     if (isLoading) return;
 
     const isPublic = pathname === NAV_ITEMS.LOGIN || pathname === NAV_ITEMS.SIGNUP;
-    const hasToken = !!localStorage.getItem("authentication");
-
-    // 公開ページでtokenがない場合、checkAuthenticationを実行しない
+    // 公開ページでtokenがない場合は判定不要
     if (isPublic && !hasToken) {
-      setUser(null);
-      setIsAuth(false);
       return;
     }
 
-    // await checkAuthentication() の代わりに query の data を参照
-    const authed = authData?.code === 200 && !!authData?.data?.user;
-    if (authed && authData?.data) { setUser(authData.data.user); setIsAuth(true); }
+    // query 成功時のみ認証済み判定する
+    const authed = isSuccess && authData.code === 200 && !!authData.data?.user;
     // 未認証で保護ページならログインへ遷移
     if (!authed && !isPublic) navigate(NAV_ITEMS.LOGIN);
     // 認証済みで公開ページならTOPへ遷移
     if (authed && isPublic) navigate(NAV_ITEMS.TOP);
 
-  }, [authData, isLoading, pathname, navigate]);
+  }, [authData, isLoading, isSuccess, pathname, navigate, hasToken]);
 
-  return { user, isAuth, signIn, signOut, isLoading };
+  return { signIn, signOut, isLoading };
 };
