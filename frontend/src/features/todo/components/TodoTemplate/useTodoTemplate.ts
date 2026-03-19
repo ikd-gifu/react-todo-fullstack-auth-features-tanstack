@@ -1,9 +1,9 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { getTodos, deleteTodo } from "../../apis/todoCrud";
-import { TodoType } from "../../types/Todo";
+import { deleteTodo } from "../../apis/todoCrud";
+import { useTodoListQuery} from "../../hooks"
 
 // defaultValuesで""を使うため、string型で定義 optionalは不要
 // react-hook-formはフィールド名で値を紐づけるため、
@@ -21,24 +21,8 @@ type SearchFormFormValue = z.infer<typeof SearchFormSchema>;
  * ページを離れたら破棄される状態のみを扱う
  */
 export const useTodoTemplate = () => {
-  // 型推論が機能: originalTodoListがArray<TodoType>と正しく推論される
-  const [originalTodoList, setOriginalTodoList] = useState<Array<TodoType>>([]);
-
-  // useEffectを副作用（API呼び出し）の再実行を防ぐためにuseCallbackでラップ
-  const fetchTodos = useCallback(async () => {
-    try {
-      const res = await getTodos();
-      if (!res.data) {
-        console.error(res.message || "No data received");
-        return;
-      }
-
-      setOriginalTodoList(res.data);
-
-    } catch (error) {
-      console.error("Failed to fetch todos:", error);
-    }
-  }, []);
+  // queryのdataがundefinedの可能性があるため[]を初期値としておく
+  const { data: originalTodoList = [], isLoading, isError, error } = useTodoListQuery();
 
   const {
     control,
@@ -67,9 +51,9 @@ export const useTodoTemplate = () => {
     }
 
     // バックエンドで削除が成功した場合にフロントエンドの状態からも削除
-    setOriginalTodoList((prev) => prev.filter((todo) => todo.id !== targetId));
+    // deleteのQuery連携は後段で実施（invalidateQueries or setQueryData）
   },
-  [setOriginalTodoList] // ESLintの警告回避のために依存配列にset関数を追加
+  []
 );
 
   // 検索キーワードに基づいて表示するTodoリストを絞り込む
@@ -82,13 +66,11 @@ export const useTodoTemplate = () => {
     // originalTodoListかsearchInputValueが変化したときに再計算
   }, [originalTodoList, searchInputValue]);
 
-  useEffect(() => {
-    fetchTodos(); // fetchTodos() が await getTodos() を挟むので非同期処理
-  }, [fetchTodos]);
-
   return {
     control,
     showTodoList,
     handleDeleteTodo,
+    isLoading,
+    fetchErrorMessage: isError ? (error?.message ?? "Todoの取得に失敗しました") : null,
   };
 };

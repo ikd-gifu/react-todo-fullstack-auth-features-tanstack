@@ -18,6 +18,8 @@ export const TodoTemplate = () => {
     control,
     showTodoList,
     handleDeleteTodo,
+    isLoading,
+    fetchErrorMessage,
   } = useTodoTemplate();
 
   return (
@@ -41,6 +43,8 @@ export const TodoTemplate = () => {
         {/* 状態、関数を渡す */}
         <TodoList
           todoList={showTodoList}
+          isLoading={isLoading}
+          errorMessage={fetchErrorMessage}
           handleDeleteTodo={handleDeleteTodo}
         />
       </section>

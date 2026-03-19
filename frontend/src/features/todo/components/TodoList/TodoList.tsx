@@ -9,10 +9,12 @@ import { FC } from "react";
 type TodoListProps = {
   // 表示用のpropsのみ型を定義する
   todoList: {id: number; title: string;}[];
+  isLoading: boolean;
+  errorMessage: string | null;
   handleDeleteTodo: (id: number, title: string) => void;
 };
 
-export const TodoList: FC<TodoListProps> = ({ todoList, handleDeleteTodo }) => {
+export const TodoList: FC<TodoListProps> = ({ todoList, isLoading, errorMessage, handleDeleteTodo }) => {
   const navigate = useNavigate();
 
   /**
@@ -31,7 +33,11 @@ export const TodoList: FC<TodoListProps> = ({ todoList, handleDeleteTodo }) => {
 
   return (
     <div className={styles.container}>
-      {todoList.length === 0 ? (
+      {isLoading ? (
+        <p className={styles.emptyMessage}>Todo取得中</p>
+      ) : errorMessage ? (
+        <p className={styles.emptyMessage}>{errorMessage}</p>
+      ) : todoList.length === 0 ? (
         <p className={styles.emptyMessage}>Todoがありません</p>
       ) : (
         <ul className={styles.list}>
