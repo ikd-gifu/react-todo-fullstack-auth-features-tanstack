@@ -6,6 +6,7 @@ export interface TodoResponseType<T = undefined> {
 }
 
 // APIが返すエラー本文の形だけを表す純粋なDTO（Data Transfer Object）
+// Rails APIの設定に対応
 export type ApiErrorBody = {
   errors: Array<{
     status: string;
@@ -14,14 +15,4 @@ export type ApiErrorBody = {
     code?: string;
     source?: { pointer: string };
   }>;
-};
-
-// Axiosのエラーオブジェクトの形に合わせたラッパー型
-// responseやstatusなどAxios特有の構造を含む
-export type AxiosErrorResponseType = {
-  message: string;
-  response?: {
-    status: number;
-    data?: ApiErrorBody;
-  };
 };
