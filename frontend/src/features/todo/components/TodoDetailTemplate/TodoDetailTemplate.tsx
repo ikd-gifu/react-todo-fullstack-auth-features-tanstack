@@ -8,7 +8,23 @@ import styles from './style.module.css';
  * URLパラメータから取得したTodoの詳細情報を表示（読み取り専用）
  */
 export const TodoDetailTemplate = () => {
-  const { todo } = useTodoDetailTemplate();
+  const { todo, isLoading, isError, error } = useTodoDetailTemplate();
+
+  if (isLoading) {
+    return (
+      <BasicLayout title="Todo詳細">
+        <div>読み込み中です...</div>
+      </BasicLayout>
+    )
+  }
+
+  if (isError) {
+    return (
+      <BasicLayout title="Todo詳細">
+        <div>{error?.message ?? 'エラーが発生しました。'}</div>
+      </BasicLayout>
+    )
+  }
 
   if (!todo) {
     return (

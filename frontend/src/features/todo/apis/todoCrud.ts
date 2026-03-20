@@ -10,11 +10,11 @@ import { isAxiosError, AxiosError } from "axios";
  */
 export const getTodos = async () => {
   try {
-    // backendのlocalhost:3001/api/v1/todosにGETリクエストを送信
+    // localhost:3001/api/v1/todos
     const response = await apiClient.get<Array<TodoType>>('/todos');
     return response.data;
   } catch (error) {
-    if (isAxiosError(error)) { // Axios由来 → response や statusが存在する可能性あり
+    if (isAxiosError(error)) {
       const axiosError = error as AxiosError<ApiErrorBody>;
       const message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
       throw new Error(message);
@@ -33,29 +33,28 @@ export const createTodo = async (payload: CreateTodoRequest) => {
     return res;
   } catch (error) {
     const res: TodoResponseType = { code: 500, message: "Unexpected error" };
-        if (isAxiosError(error)) { // Axios由来 → response や statusが存在する可能性あり
-      const axiosError = error as AxiosError<ApiErrorBody>;
-      res.code = axiosError.response?.status ?? 500;
-      res.message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
-    }
+      if (isAxiosError(error)) { // Axios由来 → response や statusが存在する可能性あり
+        const axiosError = error as AxiosError<ApiErrorBody>;
+        res.code = axiosError.response?.status ?? 500;
+        res.message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
+      }
     return res;
   }
 };
 
+// { id: number } というオブジェクトを引数に渡す
 export const getTodoById = async (payload: GetTodoRequest) => {
   try {
     // レスポンスはArray<TodoType>ではなくTodoType単体
     const response = await apiClient.get<TodoType>(`/todos/${payload.id}`);
-    const res: TodoResponseType<TodoType> = { code: response.status, data: response.data };
-    return res;
+    return response.data; // todoのみ返す
   } catch (error) {
-    const res: TodoResponseType = { code: 500, message: "Unexpected error" };
-        if (isAxiosError(error)) { // Axios由来 → response や statusが存在する可能性あり
+    if (isAxiosError(error)) {
       const axiosError = error as AxiosError<ApiErrorBody>;
-      res.code = axiosError.response?.status ?? 500;
-      res.message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
+      const message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
+      throw new Error(message);
     }
-    return res;
+    throw new Error("Unexpected error");
   }
 };
 

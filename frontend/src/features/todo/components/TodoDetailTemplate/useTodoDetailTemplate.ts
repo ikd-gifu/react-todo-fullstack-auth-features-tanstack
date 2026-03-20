@@ -1,31 +1,18 @@
-import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getTodoById } from "../../apis/todoCrud";
-import { TodoType } from "../../types/Todo";
+import { useTodoQuery } from "../../hooks"
 
+// Todo: コンポーネント化（TodoDetailTemplate.tsx）し
+// TodoDetailTemplate はデータ取得と状態制御のみ担当する
+// TodoDetailView を新設し、表示専用に分離する
 export const useTodoDetailTemplate = () => {
   const { id } = useParams();
-  const [todo, setTodo] = useState<TodoType | null>(null);
-
-  const fetchTodo = useCallback(async () => {
-    const todoId = Number(id);
-    if (!id || Number.isNaN(todoId)) {
-      return;
-    }
-
-    const res = await getTodoById({ id: todoId }); // Promiseを返す非同期関数なのでawaitで待つ
-    if (!res.data) {
-      return;
-    }
-
-    setTodo(res.data);
-  }, [id]);
-
-  useEffect(() => {
-    fetchTodo();
-  }, [fetchTodo]);
+  const todoId = Number(id);
+  const { data: todo, isLoading, isError, error} = useTodoQuery(todoId);
 
   return {
     todo,
+    isLoading,
+    isError,
+    error,
   };
 };
