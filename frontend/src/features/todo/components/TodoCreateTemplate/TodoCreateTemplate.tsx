@@ -17,6 +17,8 @@ export const TodoCreateTemplate = () => {
     handleCreateSubmit,
   } = useTodoCreateTemplate();
 
+  const rootErrorMessage = errors.root?.message;
+
   return (
     <BasicLayout title="Todo新規作成">
       <form className={styles.formGroup} onSubmit={handleCreateSubmit}>
@@ -60,6 +62,9 @@ export const TodoCreateTemplate = () => {
         </div>
 
         <div className={styles.buttonGroup}>
+          {rootErrorMessage && (
+            <p className={styles.errorMessage}>{rootErrorMessage}</p>
+          )}
           <CommonButton type="submit">作成</CommonButton>
         </div>
       </form>

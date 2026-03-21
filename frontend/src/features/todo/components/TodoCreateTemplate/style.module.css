@@ -7,3 +7,9 @@
   width: 80%;
   margin: 24px auto 0 auto;
 }
+
+.errorMessage {
+  margin: 0 0 12px;
+  color: #d32f2f;
+  font-size: 14px;
+}

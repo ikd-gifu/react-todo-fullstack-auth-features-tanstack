@@ -38,6 +38,8 @@ export const useTodoCreateTemplate = () => {
     control, // コンポーネントを登録するためのメソッドを含む
     handleSubmit, // フォームの検証が成功した場合にフォーム データを送信するための関数
     formState: { errors }, // フォーム全体の状態に関する情報を含む フィールドエラーを持つオブジェクト
+    // 分割代入で中の errors プロパティを取り出して、ローカル変数 errors として受け取る
+    setError,
   } = useForm<TodoCreateFormValues>({ // useFormがフォーム状態を管理する型を指定
     resolver: zodResolver(TodoCreateFormSchema), // Zodの検証をRHFに統合
     defaultValues: {
@@ -51,13 +53,19 @@ export const useTodoCreateTemplate = () => {
   const handleCreateSubmit = handleSubmit(
     useCallback(
       async (values: TodoCreateFormValues) => {
+        try {
           await todoCreateMutation.mutateAsync({
             title: values.title,
             content: values.content,
           });
-        navigate(NAV_ITEMS.TOP); // 登録後にトップページへ遷移
+
+          navigate(NAV_ITEMS.TOP); // 登録後にトップページへ遷移
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '作成に失敗しました';
+          setError('root', { type: 'manual', message });
+        }
       },
-      [navigate, todoCreateMutation]
+      [navigate, setError, todoCreateMutation]
     )
   );
 
