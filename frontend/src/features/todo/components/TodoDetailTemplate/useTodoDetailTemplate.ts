@@ -5,7 +5,7 @@ import { useTodoQuery } from "../../hooks"
 // TodoDetailTemplate はデータ取得と状態制御のみ担当する
 // TodoDetailView を新設し、表示専用に分離する
 export const useTodoDetailTemplate = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // string型
   const todoId = Number(id);
   const { data: todo, isLoading, isError, error} = useTodoQuery(todoId);
 
