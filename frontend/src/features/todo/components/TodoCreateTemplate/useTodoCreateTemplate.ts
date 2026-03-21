@@ -4,7 +4,7 @@ import { NAV_ITEMS } from '../../../../shared/constants/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createTodo } from '../../apis/todoCrud';
+import { useTodoCreateMutation } from '../../hooks';
 
 // オブジェクトスキーマを定義
 const TodoCreateFormSchema = z.object({
@@ -31,6 +31,8 @@ type TodoCreateFormValues = z.infer<typeof TodoCreateFormSchema>;
  */
 export const useTodoCreateTemplate = () => {
   const navigate = useNavigate();
+  // hooksはトップレベルで呼び出す
+  const todoCreateMutation = useTodoCreateMutation();
 
   const {
     control, // コンポーネントを登録するためのメソッドを含む
@@ -49,13 +51,13 @@ export const useTodoCreateTemplate = () => {
   const handleCreateSubmit = handleSubmit(
     useCallback(
       async (values: TodoCreateFormValues) => {
-          await createTodo({
+          await todoCreateMutation.mutateAsync({
             title: values.title,
             content: values.content,
           });
         navigate(NAV_ITEMS.TOP); // 登録後にトップページへ遷移
       },
-      [navigate]
+      [navigate, todoCreateMutation]
     )
   );
 
