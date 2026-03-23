@@ -15,16 +15,18 @@ export const TodoEditTemplate = () => {
     control,
     errors,
     handleEditSubmit,
+    isLoading,
+    queryErrorMessage,
   } = useTodoEditTemplate();
 
-  const rootErrorMessage = errors.root?.message;
+  const rootErrorMessage = errors.root?.message ?? queryErrorMessage;
 
-  // Todoが存在しない場合の表示
-  if (rootErrorMessage) {
+  // Todo取得中またはTodoが存在しない場合の表示
+  if (isLoading || rootErrorMessage) {
     return (
       <BasicLayout title="Todo編集">
         <div className={styles.notFound}>
-          <p>{rootErrorMessage}</p>
+          <p>{isLoading ? 'Todoを取得中です' : rootErrorMessage}</p>
         </div>
       </BasicLayout>
     );
