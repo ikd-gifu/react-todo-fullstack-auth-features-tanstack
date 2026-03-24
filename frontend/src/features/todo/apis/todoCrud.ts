@@ -58,18 +58,16 @@ export const getTodoById = async (payload: GetTodoRequest) => {
 
 export const updateTodo = async (payload: UpdateTodoRequest) => {
   try {
-      const { id, ...body } = payload; // idをURLに使い、残り(title, content)をbodyに展開
-      const response = await apiClient.put<TodoType>(`/todos/${id}`, body);
-      const res: TodoResponseType<TodoType> = { code: response.status, data: response.data };
-      return res;
+    const { id, ...body } = payload; // idをURLに使い、残り(title, content)をbodyに展開
+    const response = await apiClient.put<TodoType>(`/todos/${id}`, body);
+    return response.data;
   } catch (error) {
-        const res: TodoResponseType = { code: 500, message: "Unexpected error" };
     if (isAxiosError(error)) {
       const axiosError = error as AxiosError<ApiErrorBody>;
-      res.code = axiosError.response?.status ?? 500;
-      res.message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
+      const message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
+      throw new Error(message);
     }
-    return res;
+    throw new Error("Unexpected error");
   }
 };
 

@@ -19,14 +19,15 @@ export const TodoEditTemplate = () => {
     queryErrorMessage,
   } = useTodoEditTemplate();
 
-  const rootErrorMessage = errors.root?.message ?? queryErrorMessage;
+  // 入力値は保持したままエラーを表示する
+  const mutationErrorMessage = errors.root?.message;
 
   // Todo取得中またはTodoが存在しない場合の表示
-  if (isLoading || rootErrorMessage) {
+  if (isLoading || queryErrorMessage) {
     return (
       <BasicLayout title="Todo編集">
         <div className={styles.notFound}>
-          <p>{isLoading ? 'Todoを取得中です' : rootErrorMessage}</p>
+          <p>{isLoading ? 'Todoを取得中です' : queryErrorMessage}</p>
         </div>
       </BasicLayout>
     );
@@ -68,6 +69,9 @@ export const TodoEditTemplate = () => {
         </div>
 
         <div className={styles.buttonGroup}>
+          {mutationErrorMessage && (
+            <p className={styles.errorMessage}>{mutationErrorMessage}</p>
+          )}
           <CommonButton type="submit">
             更新
           </CommonButton>

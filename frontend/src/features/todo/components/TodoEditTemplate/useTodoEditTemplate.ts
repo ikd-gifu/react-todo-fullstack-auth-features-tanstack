@@ -74,20 +74,21 @@ export const useTodoEditTemplate = () => {
           return;
         }
 
-        const res = await todoEditMutation.mutateAsync({
-          id: todoId,
-          title: values.title,
-          content: values.content ?? "",
-        });
+        try {
+          await todoEditMutation.mutateAsync({
+            id: todoId,
+            title: values.title,
+            content: values.content ?? "",
+          });
 
-        if (!res.data) {
-          setError("root", { message: res.message || "更新に失敗しました" });
-          return;
-        }
           navigate(NAV_ITEMS.TOP);
-        },
-        [id, navigate, setError, todoEditMutation]
-      )
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '更新に失敗しました';
+          setError('root', { type: 'manual', message });
+        }
+      },
+      [id, navigate, setError, todoEditMutation]
+    )
   );
 
   return {

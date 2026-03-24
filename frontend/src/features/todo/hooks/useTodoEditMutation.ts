@@ -8,9 +8,13 @@ export const useTodoEditMutation = () => {
 
   return useMutation({
     mutationFn: (request: UpdateTodoRequest) => updateTodo(request),
-    onSuccess: () => {
-      // 更新後のTodos、更新したtodoを再取得する
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-    }
+    onSuccess: (data, variables) => {
+      // レスポンスで個別キャッシュ(['todos', id])を即時更新
+      // → 詳細・編集ページへ戻った際に再フェッチなしで最新データを表示
+      queryClient.setQueryData(['todos', variables.id], data);
+      // リストキャッシュ(['todos'])のみを無効化して再フェッチ
+      // exact: true で ['todos', id] などの個別キャッシュには影響しない
+      queryClient.invalidateQueries({ queryKey: ['todos'], exact: true });
+    },
   });
 };
