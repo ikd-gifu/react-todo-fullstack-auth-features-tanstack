@@ -1,6 +1,6 @@
 import apiClient from "../../../shared/apis/apiClient";
 import { TodoType, CreateTodoRequest, GetTodoRequest, UpdateTodoRequest, DeleteTodoRequest } from "../types/Todo";
-import { TodoResponseType, ApiErrorBody } from "../../../shared/types/TodoResponse";
+import { ApiErrorBody } from "../../../shared/types/TodoResponse";
 import { isAxiosError, AxiosError } from "axios";
 
 /**
@@ -73,16 +73,15 @@ export const updateTodo = async (payload: UpdateTodoRequest) => {
 
 export const deleteTodo = async (payload: DeleteTodoRequest) => {
   try {
-    const response = await apiClient.delete<TodoType>(`/todos/${payload.id}`);
-    const res: TodoResponseType<TodoType> = { code: response.status, data: response.data };
-    return res;
+    // レスポンスのdataは""
+    await apiClient.delete<void>(`/todos/${payload.id}`);
   } catch (error) {
-    const res: TodoResponseType = { code: 500, message: "Unexpected error" };
     if (isAxiosError(error)) {
       const axiosError = error as AxiosError<ApiErrorBody>;
-      res.code = axiosError.response?.status ?? 500;
-      res.message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
+      const message = axiosError.response?.data?.errors?.[0]?.detail ?? "Request failed";
+      throw new Error(message);
     }
-    return res;
+
+    throw new Error("Unexpected error");
   }
 };

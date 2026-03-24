@@ -2,7 +2,7 @@ import { useMemo, useCallback } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { deleteTodo } from "../../apis/todoCrud";
+import { useTodoDeleteMutation } from "../../hooks";
 import { useTodoListQuery} from "../../hooks"
 
 // defaultValuesで""を使うため、string型で定義 optionalは不要
@@ -23,6 +23,7 @@ type SearchFormFormValue = z.infer<typeof SearchFormSchema>;
 export const useTodoTemplate = () => {
   // queryのdataがundefinedの可能性があるため[]を初期値としておく
   const { data: originalTodoList = [], isLoading, isError, error } = useTodoListQuery();
+  const todoDeleteMutation = useTodoDeleteMutation();
 
   const {
     control,
@@ -42,18 +43,13 @@ export const useTodoTemplate = () => {
       return;
     }
 
-    const res = await deleteTodo({ id: targetId });
-    // 204 No Contentも成功とみなす res.dataはundefined
-    const isSuccess = res.code === 204 || Boolean(res.data);
-    if (!isSuccess) {
-      console.error(res.message || "Failed to delete todo");
-      return;
+    try {
+      await todoDeleteMutation.mutateAsync({ id: targetId });
+    } catch (error) {
+      console.error(error);
     }
-
-    // バックエンドで削除が成功した場合にフロントエンドの状態からも削除
-    // deleteのQuery連携は後段で実施（invalidateQueries or setQueryData）
   },
-  []
+  [todoDeleteMutation]
 );
 
   // 検索キーワードに基づいて表示するTodoリストを絞り込む

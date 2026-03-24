@@ -8,6 +8,10 @@ export const useTodoEditMutation = () => {
 
   return useMutation({
     mutationFn: (request: UpdateTodoRequest) => updateTodo(request),
+    // dataはバックエンドからのレスポンス{id: "", title: "",..}
+    // 更新済みの新しいデータを使い、フロントとバックエンドの整合性を担保する
+    // variablesはrequestの値 getTodoByIdで指定したidでリクエスト時点で
+    // 確定しているのでこれを使う
     onSuccess: (data, variables) => {
       // レスポンスで個別キャッシュ(['todos', id])を即時更新
       // → 詳細・編集ページへ戻った際に再フェッチなしで最新データを表示
